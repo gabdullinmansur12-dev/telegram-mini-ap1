@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Тёплый Пар</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --bg:#1c1310; --card:#2a1d18; --card2:#33241d; --line:#432f26;
+    --text:#f6ece1; --muted:#bfa491; --accent:#d6a067; --accent2:#8a5a3b;
+    --ok:#79b47a; --warn:#e0b25c;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  body{padding-bottom:86px}
+  header{position:sticky;top:0;z-index:20;background:rgba(28,19,16,.94);
+    backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:14px 16px 10px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
+    background:linear-gradient(140deg,var(--accent),#6f4227);font-size:20px}
+  .brand h1{font-size:17px;margin:0;letter-spacing:.5px}
+  .brand p{margin:2px 0 0;font-size:11px;color:var(--muted)}
+  .demo{margin-top:10px;font-size:11px;color:var(--warn);
+    background:rgba(224,178,92,.1);border:1px solid rgba(224,178,92,.3);
+    border-radius:10px;padding:7px 10px;line-height:1.35}
+  main{padding:14px 16px 10px}
+  .hide{display:none !important}
+  h2{font-size:15px;margin:0 0 12px;color:var(--muted);font-weight:600;letter-spacing:.3px}
+  .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;padding:9px 14px;border-radius:999px;border:1px solid var(--line);
+    background:var(--card);color:var(--muted);font-size:13px;cursor:pointer}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#2a1708;font-weight:600}
+  .grid{display:grid;gap:12px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:12px;display:flex;gap:12px;align-items:center}
+  .thumb{width:62px;height:62px;border-radius:12px;flex:0 0 auto;display:grid;
+    place-items:center;font-size:26px;background:linear-gradient(140deg,#3a2820,#5c3b29)}
+  .info{flex:1;min-width:0}
+  .info h3{margin:0 0 3px;font-size:14px;font-weight:600}
+  .info p{margin:0 0 7px;font-size:11.5px;color:var(--muted);line-height:1.35;
+    overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .info .price{font-size:14px;color:var(--accent);font-weight:700}
+  .btn{border:0;border-radius:12px;padding:11px 16px;font-size:14px;font-weight:600;
+    background:var(--accent);color:#2a1708;cursor:pointer}
+  .btn:active{transform:scale(.97)}
+  .btn.sm{padding:8px 12px;font-size:13px;border-radius:10px}
+  .btn.ghost{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .qty{display:flex;align-items:center;gap:10px;background:var(--card2);
+    border:1px solid var(--line);border-radius:999px;padding:4px 6px}
+  .qty button{width:30px;height:30px;border-radius:50%;border:0;background:#463026;
+    color:var(--text);font-size:17px;line-height:1;cursor:pointer}
+  .qty span{min-width:22px;text-align:center;font-size:14px;font-weight:600}
+  .empty{text-align:center;color:var(--muted);padding:44px 20px;font-size:14px;line-height:1.5}
+  .sum{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:14px;margin-top:14px}
+  .sum .line{display:flex;justify-content:space-between;font-size:13px;
+    color:var(--muted);padding:3px 0}
+  .sum .total{display:flex;justify-content:space-between;font-size:17px;font-weight:700;
+    margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+  .field input{width:100%;padding:13px;border-radius:12px;border:1px solid var(--line);
+    background:var(--card2);color:var(--text);font-size:15px;outline:none}
+  .field input:focus{border-color:var(--accent)}
+  .switch{display:flex;gap:8px;margin-bottom:14px}
+  .switch button{flex:1;padding:12px;border-radius:12px;border:1px solid var(--line);
+    background:var(--card2);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer}
+  .switch button.on{background:var(--accent);border-color:var(--accent);color:#2a1708}
+  .order{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:13px;margin-bottom:10px}
+  .badge{font-size:11px;padding:3px 9px;border-radius:999px;background:#40301f;color:var(--warn)}
+  .bottom{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;
+    background:rgba(35,24,19,.97);backdrop-filter:blur(14px);border-top:1px solid var(--line);
+    padding:8px 4px calc(8px + env(safe-area-inset-bottom))}
+  .bottom button{flex:1;border:0;background:none;color:var(--muted);font-size:10.5px;
+    padding:6px 0;cursor:pointer;position:relative;font-weight:600}
+  .bottom button .ico{display:block;font-size:20px;margin-bottom:2px}
+  .bottom button.on{color:var(--accent)}
+  .dot{position:absolute;top:2px;right:calc(50% - 20px);min-width:16px;height:16px;
+    border-radius:9px;background:var(--accent);color:#2a1708;font-size:10px;
+    font-weight:700;line-height:16px;text-align:center;padding:0 4px}
+  .note{font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:10px}
+  .star{background:linear-gradient(140deg,#4a3720,#2a1d18);border:1px solid var(--line);
+    border-radius:16px;padding:18px;text-align:center;margin-bottom:14px}
+  .star .big{font-size:34px;font-weight:800;color:var(--accent);margin:6px 0}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">☕</div>
+    <div>
+      <h1>ТЁПЛЫЙ ПАР</h1>
+      <p>кофейня · демо-приложение</p>
+    </div>
+  </div>
+  <div class="demo">🎭 Демонстрационный режим: заказы тестовые, оплата не проводится.</div>
+</header>
+
+<main>
+
+  <!-- МЕНЮ -->
+  <section id="tab-menu">
+    <h2>Меню</h2>
+    <div class="chips" id="chips"></div>
+    <div class="grid" id="list"></div>
+  </section>
+
+  <!-- КОРЗИНА -->
+  <section id="tab-cart" class="hide">
+    <h2>Корзина</h2>
+    <div id="cartBox"></div>
+  </section>
+
+  <!-- ОФОРМЛЕНИЕ -->
+  <section id="tab-checkout" class="hide">
+    <h2>Оформление</h2>
+    <div class="switch">
+      <button id="mPickup" class="on">🏃 Самовывоз</button>
+      <button id="mDelivery">🛵 Доставка</button>
+    </div>
+    <div class="field">
+      <label>Как вас зовут</label>
+      <input id="fName" placeholder="Анна" autocomplete="name">
+    </div>
+    <div class="field">
+      <label>Телефон</label>
+      <input id="fPhone" inputmode="tel" placeholder="+7 999 123-45-67">
+    </div>
+    <div class="field hide" id="addrField">
+      <label>Адрес доставки</label>
+      <input id="fAddr" placeholder="ул. Примерная, 12, кв. 3">
+    </div>
+    <div class="sum" id="checkoutSum"></div>
+    <div class="note">Самовывоз: ул. Примерная, 12 · 8:00–22:00 (вымышленный адрес).</div>
+    <button class="btn" style="width:100%;margin-top:14px" id="sendOrder">Подтвердить заказ</button>
+  </section>
+
+  <!-- ЗАКАЗЫ -->
+  <section id="tab-orders" class="hide">
+    <h2>Мои заказы</h2>
+    <div id="ordersBox"></div>
+  </section>
+
+  <!-- БОНУСЫ -->
+  <section id="tab-bonus" class="hide">
+    <h2>Бонусы</h2>
+    <div class="star">
+      <div style="font-size:13px;color:var(--muted)">Ваш баланс</div>
+      <div class="big" id="bonusValue">0</div>
+      <div style="font-size:12px;color:var(--muted)">бонусов · 1 бонус = 1 ₽</div>
+    </div>
+    <div class="sum">
+      <div class="line"><span>Начисляем</span><span>5% от заказа</span></div>
+      <div class="line"><span>Можно оплатить бонусами</span><span>до 30% суммы</span></div>
+      <div class="line"><span>Списание</span><span>при оформлении</span></div>
+    </div>
+    <div class="note">🎭 В демо-приложении бонусы тоже тестовые.</div>
+  </section>
+
+</main>
+
+<nav class="bottom">
+  <button data-tab="menu" class="on"><span class="ico">☕</span>Меню</button>
+  <button data-tab="cart"><span class="ico">🛒</span>Корзина<span class="dot hide" id="cartDot">0</span></button>
+  <button data-tab="orders"><span class="ico">📦</span>Заказы</button>
+  <button data-tab="bonus"><span class="ico">⭐</span>Бонусы</button>
+</nav>
+
+<script>
+const tg = window.Telegram ? window.Telegram.WebApp : null;
+if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
+
+const tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : null;
+const USER_KEY = "tp_" + (tgUser ? tgUser.id : "guest");
+
+const PRODUCTS = [
+  {id:1,  cat:"coffee",  name:"Эспрессо",              desc:"Плотный шот из бленда «Средиземноморье».", price:190, e:"☕"},
+  {id:2,  cat:"coffee",  name:"Американо",             desc:"Эспрессо с горячей водой. Чистый вкус зерна.", price:210, e:"☕"},
+  {id:3,  cat:"coffee",  name:"Капучино",              desc:"Эспрессо, молоко и мелкая пенка.", price:280, e:"🥛"},
+  {id:4,  cat:"coffee",  name:"Латте",                 desc:"Мягкий кофе с молоком и рисунком.", price:300, e:"🥛"},
+  {id:5,  cat:"coffee",  name:"Флэт уайт",             desc:"Двойной эспрессо и плотное молоко.", price:320, e:"☕"},
+  {id:6,  cat:"coffee",  name:"Раф ванильный",         desc:"Сливки, ваниль и эспрессо.", price:340, e:"🍦"},
+  {id:7,  cat:"coffee",  name:"Мокка",                 desc:"Кофе с шоколадом и молоком.", price:350, e:"🍫"},
+  {id:8,  cat:"coffee",  name:"Фильтр V60",            desc:"Светлая обжарка, ягодная кислинка.", price:290, e:"☕"},
+  {id:9,  cat:"cold",    name:"Айс-латте",             desc:"Латте на льду с холодным молоком.", price:330, e:"🧊"},
+  {id:10, cat:"cold",    name:"Колд брю",              desc:"12 часов холодной экстракции.", price:350, e:"🧊"},
+  {id:11, cat:"cold",    name:"Айс-матча",             desc:"Матча, молоко и лёд.", price:370, e:"🍵"},
+  {id:12, cat:"cold",    name:"Лимонад «Тёплый Пар»",  desc:"Домашний лимонад с розмарином и лаймом.", price:260, e:"🍋"},
+  {id:13, cat:"cold",    name:"Холодный чай с персиком",desc:"Чёрный чай, персик, мята.", price:270, e:"🍑"},
+  {id:14, cat:"dessert", name:"Чизкейк",               desc:"Классический нью-йорк с ванилью.", price:380, e:"🍰"},
+  {id:15, cat:"dessert", name:"Брауни",                desc:"Плотный шоколадный брауни с орехом.", price:320, e:"🍫"},
+  {id:16, cat:"dessert", name:"Тирамису",              desc:"Маскарпоне, савоярди, эспрессо.", price:390, e:"🍰"},
+  {id:17, cat:"dessert", name:"Медовик",               desc:"Тонкие коржи и сметанный крем.", price:340, e:"🍯"},
+  {id:18, cat:"dessert", name:"Тарт с лимоном",        desc:"Песочная основа, лимонный крем, меренга.", price:360, e:"🍋"},
+  {id:19, cat:"bakery",  name:"Круассан классический", desc:"Слоёный, на французском масле.", price:220, e:"🥐"},
+  {id:20, cat:"bakery",  name:"Круассан миндальный",   desc:"С миндальным кремом и лепестками.", price:280, e:"🥐"},
+  {id:21, cat:"bakery",  name:"Синнабон",              desc:"Булочка с корицей и глазурью.", price:290, e:"🥨"},
+  {id:22, cat:"bakery",  name:"Сырная лепёшка",        desc:"Хачапури по-имеретински.", price:250, e:"🧀"},
+  {id:23, cat:"bakery",  name:"Киш с лососем",         desc:"Открытый пирог на песочном тесте.", price:360, e:"🥧"},
+  {id:24, cat:"bakery",  name:"Багет с индейкой",      desc:"Хрустящий багет, индейка, песто.", price:320, e:"🥖"},
+  {id:25, cat:"bakery",  name:"Бейгл с лососем",       desc:"Творожный сыр, лосось, каперсы.", price:340, e:"🥯"}
+];
+
+const CATS = [
+  {id:"all", label:"Всё"},
+  {id:"coffee", label:"☕ Кофе"},
+  {id:"cold", label:"🧊 Холодные"},
+  {id:"dessert", label:"🍰 Десерты"},
+  {id:"bakery", label:"🥐 Выпечка"}
+];
+
+const DELIVERY_FEE = 150;
+
+let cart = [];
+let orders = [];
+let bonus = 0;
+let mode = "pickup";
+let activeCat = "all";
+let useBonus = false;
+
+const $ = id => document.getElementById(id);
+const money = v => new Intl.NumberFormat("ru-RU").format(Math.round(v)) + " ₽";
+const product = id => PRODUCTS.find(p => p.id === Number(id));
+
+function store(key, value) {
+  try { localStorage.setItem(USER_KEY + "_" + key, JSON.stringify(value)); } catch(e){}
+}
+function load(key, fallback) {
+  try {
+    const raw = localStorage.getItem(USER_KEY + "_" + key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch(e) { return fallback; }
+}
+function haptic(type) {
+  try {
+    if (!tg || !tg.HapticFeedback) return;
+    if (type === "ok") tg.HapticFeedback.notificationOccurred("success");
+    else tg.HapticFeedback.impactOccurred("light");
+  } catch(e){}
+}
+
+/* ---------- меню ---------- */
+function renderChips() {
+  $("chips").innerHTML = CATS.map(c =>
+    `<button class="chip ${c.id === activeCat ? "on" : ""}" data-cat="${c.id}">${c.label}</button>`
+  ).join("");
+  $("chips").querySelectorAll(".chip").forEach(el => {
+    el.onclick = () => { activeCat = el.dataset.cat; renderChips(); renderList(); };
+  });
+}
+
+function renderList() {
+  const shown = PRODUCTS.filter(p => activeCat === "all" || p.cat === activeCat);
+  $("list").innerHTML = shown.map(p => `
+    <div class="card">
+      <div class="thumb">${p.e}</div>
+      <div class="info">
+        <h3>${p.name}</h3>
+        <p>${p.desc}</p>
+        <div class="price">${money(p.price)}</div>
+      </div>
+      <button class="btn sm" data-add="${p.id}">＋</button>
+    </div>
+  `).join("");
+  $("list").querySelectorAll("[data-add]").forEach(el => {
+    el.onclick = () => addToCart(Number(el.dataset.add));
+  });
+}
+
+function addToCart(id) {
+  const row = cart.find(r => r.id === id);
+  if (row) row.qty += 1;
+  else cart.push({id: id, qty: 1});
+  saveCart(); haptic("tap"); renderCart(); updateDot();
+}
+
+function saveCart() {
+  store("cart", cart);
+  store("bonus", bonus);
+}
+
+/* ---------- корзина ---------- */
+function totals() {
+  let sub = 0;
+  cart.forEach(r => {
+    const p = product(r.id);
+    if (p) sub += p.price * r.qty;
+  });
+  const fee = mode === "delivery" ? DELIVERY_FEE : 0;
+  const base = sub + fee;
+  const cap = Math.floor(base * 0.3);
+  const use = useBonus ? Math.min(cap, bonus) : 0;
+  return {sub, fee, base, cap, use, pay: Math.max(0, base - use)};
+}
+
+function renderCart() {
+  const box = $("cartBox");
+  if (!cart.length) {
+    box.innerHTML = `<div class="empty">Корзина пуста.<br>Выберите что-нибудь в меню ☕</div>`;
+    updateMainButton();
+    return;
+  }
+  box.innerHTML = cart.map(r => {
+    const p = product(r.id);
+    if (!p) return "";
+    return `
+      <div class="card" style="margin-bottom:10px">
+        <div class="thumb">${p.e}</div>
+        <div class="info">
+          <h3>${p.name}</h3>
+          <div class="price">${money(p.price * r.qty)}</div>
+        </div>
+        <div class="qty">
+          <button data-dec="${p.id}">−</button>
+          <span>${r.qty}</span>
+          <button data-inc="${p.id}">+</button>
+        </div>
+      </div>`;
+  }).join("");
+
+  const t = totals();
+  box.innerHTML += `
+    <div class="sum">
+      <div class="line"><span>Товары</span><span>${money(t.sub)}</span></div>
+      <div class="line"><span>Доставка</span><span>${t.fee ? money(t.fee) : "бесплатно"}</span></div>
+      <div class="total"><span>Итого</span><span>${money(t.base)}</span></div>
+    </div>
+    <button class="btn" style="width:100%;margin-top:14px" id="toCheckout">Перейти к оформлению</button>
+    <button class="btn ghost" style="width:100%;margin-top:8px" id="clearCart">Очистить корзину</button>`;
+
+  box.querySelectorAll("[data-inc]").forEach(el => el.onclick = () => {
+    const r = cart.find(x => x.id === Number(el.dataset.inc));
+    if (r) r.qty += 1;
+    saveCart(); renderCart(); updateDot();
+  });
+  box.querySelectorAll("[data-dec]").forEach(el => el.onclick = () => {
+    const id = Number(el.dataset.dec);
+    const r = cart.find(x => x.id === id);
+    if (!r) return;
+    r.qty -= 1;
+    if (r.qty < 1) cart = cart.filter(x => x.id !== id);
+    saveCart(); renderCart(); updateDot();
+  });
+  $("toCheckout").onclick = () => show("checkout");
+  $("clearCart").onclick = () => {
+    cart = []; saveCart(); renderCart(); updateDot();
+  };
+  updateMainButton();
+}
+
+/* ---------- оформление ---------- */
+function renderCheckout() {
+  const t = totals();
+  let html = `
+    <div class="line"><span>Товары</span><span>${money(t.sub)}</span></div>`;
+  if (t.fee) html += `<div class="line"><span>Доставка</span><span>${money(t.fee)}</span></div>`;
+  if (t.use) html += `<div class="line"><span>Бонусами</span><span>−${money(t.use)}</span></div>`;
+  html += `<div class="total"><span>К оплате</span><span>${money(t.pay)}</span></div>`;
+  if (bonus > 0) {
+    html += `<button class="btn ghost" style="width:100%;margin-top:12px" id="bonusBtn">
+      ${useBonus ? "🎁 Не списывать бонусы" : "🎁 Списать бонусы −" + money(Math.min(t.cap, bonus))}
+    </button>`;
+  }
+  $("checkoutSum").innerHTML = html;
+  const b = $("bonusBtn");
+  if (b) b.onclick = () => { useBonus = !useBonus; renderCheckout(); };
+  $("addrField").classList.toggle("hide", mode !== "delivery");
+}
+
+function normalizePhone(raw) {
+  return (raw || "").replace(/\D/g, "");
+}
+
+function submitOrder() {
+  if (!cart.length) { show("menu"); return; }
+  const name = ($("fName").value || "").trim().replace(/'/g, " ");
+  const phone = normalizePhone($("fPhone").value);
+  const addr = ($("fAddr").value || "").trim().replace(/'/g, " ");
+
+  if (name.length < 2) { alert("Напишите имя — хотя бы 2 символа."); $("fName").focus(); return; }
+  if (phone.length < 10 || phone.length > 15) { alert("Телефон должен содержать 10–15 цифр."); $("fPhone").focus(); return; }
+  if (mode === "delivery" && addr.length < 5) { alert("Для доставки нужен адрес."); $("fAddr").focus(); return; }
+
+  const payload = {
+    v: 1,
+    mode: mode,
+    name: name,
+    phone: phone,
+    addr: mode === "delivery" ? addr : "",
+    use_bonus: useBonus ? 1 : 0,
+    items: cart.map(r => ({id: r.id, qty: r.qty}))
+  };
+
+  const text = JSON.stringify(payload);
+  if (text.length > 3800) { alert("Заказ слишком большой — уменьшите количество позиций."); return; }
+
+  const t = totals();
+  orders.unshift({
+    num: "из приложения",
+    date: new Date().toLocaleString("ru-RU", {day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"}),
+    status: "Принят",
+    pay: t.pay,
+    items: cart.map(r => {
+      const p = product(r.id);
+      return {name: p ? p.name : "?", qty: r.qty};
+    })
+  });
+  bonus = bonus - t.use + Math.floor(t.pay * 0.05);
+  store("orders", orders.slice(0, 20));
+  store("bonus", bonus);
+  cart = [];
+  saveCart();
+  renderCart(); renderOrders(); renderBonus(); updateDot();
+
+  haptic("ok");
+
+  if (tg && tg.sendData) {
+    tg.sendData(text);
+  } else {
+    alert("Откройте приложение кнопкой «🛍 Открыть приложение» из бота — иначе Telegram не передаст заказ.");
+  }
+}
+
+/* ---------- заказы и бонусы ---------- */
+function renderOrders() {
+  if (!orders.length) {
+    $("ordersBox").innerHTML = `<div class="empty">Заказов пока нет.<br>Оформите первый — статус появится здесь.</div>`;
+    return;
+  }
+  $("ordersBox").innerHTML = orders.map(o => `
+    <div class="order">
+      <div class="row">
+        <strong>Заказ №${o.num}</strong>
+        <span class="badge">${o.status}</span>
+      </div>
+      <div style="font-size:11.5px;color:var(--muted);margin:6px 0 8px">${o.date}</div>
+      <div style="font-size:13px;line-height:1.5">${o.items.map(i => i.name + " ×" + i.qty).join(", ")}</div>
+      <div class="row" style="margin-top:10px">
+        <span style="font-size:12px;color:var(--muted)">Сумма</span>
+        <strong style="color:var(--accent)">${money(o.pay)}</strong>
+      </div>
+    </div>
+  `).join("") + `<div class="note">Полные статусы и уведомления приходят в чат бота.</div>`;
+}
+
+function renderBonus() {
+  $("bonusValue").textContent = bonus;
+}
+
+/* ---------- навигация ---------- */
+function show(tab) {
+  ["menu", "cart", "orders", "bonus", "checkout"].forEach(t => {
+    $("tab-" + t).classList.toggle
